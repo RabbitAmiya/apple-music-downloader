@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"path/filepath"
+
 	"github.com/gospider007/requests"
 	"google.golang.org/protobuf/proto"
 
@@ -248,7 +249,7 @@ func extsong(b string) bytes.Buffer {
 		progressbar.OptionShowCount(),
 		progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionShowBytes(true),
-		progressbar.OptionSetDescription("Downloading..."),
+		progressbar.OptionSetDescription("下载中..."),
 		progressbar.OptionSetTheme(progressbar.Theme{
 			Saucer:        "",
 			SaucerHead:    "",
@@ -308,7 +309,7 @@ func Run(adamId string, trackpath string, authtoken string, mutoken string, mvmo
 		return keyAndUrls, nil
 	}
 	body := extsong(fileurl)
-	fmt.Print("Downloaded\n")
+	fmt.Print("下载完成\n")
 	//bodyReader := bytes.NewReader(body)
 	var buffer bytes.Buffer
 
@@ -351,7 +352,7 @@ func ExtMvData(keyAndUrls string, savePath string) error {
 	// 依次下载每个链接并写入文件
 	bar := progressbar.DefaultBytes(
 		-1,
-		"Downloading...",
+		"下载中...",
 	)
 	barWriter := io.MultiWriter(tempFile, bar)
 	for _, url := range urls {
@@ -375,17 +376,17 @@ func ExtMvData(keyAndUrls string, savePath string) error {
 		//fmt.Printf("第 %d 个链接 %s 下载并写入完成\n", idx+1, url)
 	}
 	tempFile.Close()
-	fmt.Println("\nDownloaded.")
+	fmt.Println("\n下载完成.")
 
 	cmd1 := exec.Command("mp4decrypt", "--key", key, tempFile.Name(), filepath.Base(savePath))
 	cmd1.Dir = filepath.Dir(savePath) //设置mp4decrypt的工作目录以解决中文路径错误
 	outlog, err := cmd1.CombinedOutput()
 	if err != nil {
-		fmt.Printf("Decrypt failed: %v\n", err)
-		fmt.Printf("Output:\n%s\n", outlog)
+		fmt.Printf("解密失败: %v\n", err)
+		fmt.Printf("输出:\n%s\n", outlog)
 		return err
 	} else {
-		fmt.Println("Decrypted.")
+		fmt.Println("解密完成.")
 	}
 	return nil
 }
@@ -395,7 +396,7 @@ func DecryptMP4(r io.Reader, key []byte, w io.Writer) error {
 	// Initialization
 	inMp4, err := mp4.DecodeFile(r)
 	if err != nil {
-		return fmt.Errorf("failed to decode file: %w", err)
+		return fmt.Errorf("解码文件失败: %w", err)
 	}
 	if !inMp4.IsFragmented() {
 		return errors.New("file is not fragmented")

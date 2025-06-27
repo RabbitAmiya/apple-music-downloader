@@ -17,11 +17,14 @@ import (
 	"github.com/grafov/m3u8"
 
 	"encoding/binary"
+
 	"github.com/schollz/progressbar/v3"
 
 	"main/utils/structs"
 )
+
 const prefetchKey = "skd://itunes.apple.com/P000000000/s1/e1"
+
 var ErrTimeout = errors.New("response timed out")
 
 type TimedResponseBody struct {
@@ -42,7 +45,6 @@ func (b *TimedResponseBody) Read(p []byte) (int, error) {
 	}
 	return n, err
 }
-
 
 func Run(adamId string, playlistUrl string, outfile string, Config structs.ConfigSet) error {
 	var err error
@@ -118,7 +120,7 @@ func Run(adamId string, playlistUrl string, outfile string, Config structs.Confi
 			return err
 		}
 		defer do.Body.Close()
-		if do.ContentLength < int64(Config.MaxMemoryLimit * 1024 * 1024) {
+		if do.ContentLength < int64(Config.MaxMemoryLimit*1024*1024) {
 			var buffer bytes.Buffer
 			bar := progressbar.NewOptions64(
 				do.ContentLength,
@@ -129,7 +131,7 @@ func Run(adamId string, playlistUrl string, outfile string, Config structs.Confi
 				progressbar.OptionShowCount(),
 				progressbar.OptionEnableColorCodes(true),
 				progressbar.OptionShowBytes(true),
-				progressbar.OptionSetDescription("Downloading..."),
+				progressbar.OptionSetDescription("下载中..."),
 				progressbar.OptionSetTheme(progressbar.Theme{
 					Saucer:        "",
 					SaucerHead:    "",
@@ -140,7 +142,7 @@ func Run(adamId string, playlistUrl string, outfile string, Config structs.Confi
 			)
 			io.Copy(io.MultiWriter(&buffer, bar), do.Body)
 			body = &buffer
-			fmt.Print("Downloaded\n")
+			fmt.Print("下载完成\n")
 		} else {
 			body = do.Body
 		}
@@ -162,7 +164,7 @@ func Run(adamId string, playlistUrl string, outfile string, Config structs.Confi
 	if err != nil {
 		return err
 	}
-	fmt.Print("Decrypted\n")
+	fmt.Print("解密完成\n")
 	return nil
 }
 
@@ -214,7 +216,7 @@ func downloadAndDecryptFile(conn io.ReadWriter, in io.Reader, outfile string,
 		progressbar.OptionShowCount(),
 		progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionShowBytes(true),
-		progressbar.OptionSetDescription("Decrypting..."),
+		progressbar.OptionSetDescription("解密完成..."),
 		progressbar.OptionSetTheme(progressbar.Theme{
 			Saucer:        "",
 			SaucerHead:    "",
@@ -363,7 +365,7 @@ func parseMediaPlaylist(r io.ReadCloser) ([]*m3u8.MediaSegment, error) {
 	return mediaPlaylist.Segments, nil
 }
 
-//pasing
+// pasing
 func ReadInitSegment(r io.Reader) (*mp4.InitSegment, uint64, error) {
 	var offset uint64 = 0
 	init := mp4.NewMP4Init()
@@ -454,7 +456,8 @@ func TransformInit(init *mp4.InitSegment) (map[uint32]mp4.DecryptTrackInfo, erro
 	}
 	return tracks, nil
 }
-//remote
+
+// remote
 // Reset the loops on the script's end and close the connection
 func Close(conn io.WriteCloser) error {
 	defer conn.Close()
@@ -476,8 +479,6 @@ func SendString(conn io.Writer, uri string) error {
 	_, err = io.WriteString(conn, uri)
 	return err
 }
-
-
 
 func cbcsFullSubsampleDecrypt(data []byte, conn *bufio.ReadWriter) error {
 	// Drops 4 last bits -> multiple of 16
